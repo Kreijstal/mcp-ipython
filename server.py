@@ -6,6 +6,29 @@ import time # Added for manual timeout management
 from fastmcp import FastMCP, Context
 from jupyter_client import KernelManager
 
+class HistoryManager:
+    def __init__(self):
+        self.history_file = "ipython_auto_history.py"
+        self._ensure_history_file()
+    
+    def _ensure_history_file(self):
+        """Ensure history file exists with proper header"""
+        try:
+            with open(self.history_file, 'a+') as f:
+                if f.tell() == 0:  # File is empty
+                    f.write("# Automatic IPython Command History\n")
+        except Exception as e:
+            print(f"Warning: Could not initialize history file: {e}")
+
+    def save_command(self, command):
+        """Append a command to history file"""
+        try:
+            with open(self.history_file, 'a') as f:
+                if not command.startswith(('get_ipython', '%')) and command.strip():
+                    f.write(f"{command}\n")
+        except Exception as e:
+            print(f"Warning: Could not save command to history: {e}")
+
 # Global kernel manager and client
 km = None
 kc = None
@@ -58,6 +81,13 @@ def shutdown_ipython_kernel():
 
 mcp = FastMCP("IPython Backend MCP Server 🚀")
 
+# SymPy Example Usage (uncomment to test):
+#  1. Symbolic variables: `x, y = symbols('x y')`
+#  2. Equation solving: `solve(x**2 - 5*x + 6, x)` → [2, 3]
+#  3. Calculus: `diff(sin(x)*exp(x), x)` → exp(x)*sin(x) + exp(x)*cos(x)
+#  4. Pretty printing: `init_printing()`
+#  5. Matrices: `Matrix([[1, 2], [3, 4]])`
+
 @mcp.tool()
 async def send_command(command: str, ctx: Context) -> str:
     """
@@ -76,6 +106,13 @@ async def send_command(command: str, ctx: Context) -> str:
             await ctx.error(f"Failed to restart IPython kernel: {e}")
             return f"Error: IPython kernel not available and failed to restart: {e}"
 
+    # Initialize history manager if not exists
+    if not hasattr(send_command, '_history_manager'):
+        send_command._history_manager = HistoryManager()
+    
+    # Save command to history before execution
+    send_command._history_manager.save_command(command)
+    
     await ctx.info(f"Executing command in IPython: {command}")
     
     if not kc.channels_running:
@@ -184,6 +221,8 @@ async def send_command(command: str, ctx: Context) -> str:
         outputs.append(f"Exception while getting shell reply: {e}")
             
     return "\n".join(filter(None, outputs))
+
+
 
 
 @mcp.tool()
