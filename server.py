@@ -236,7 +236,7 @@ async def clear_kernel(ctx: Context) -> str:
     else:
         return f"IPython kernel clear command finished with potential issues.\nDetails:\n{reset_command_output}"
 
-if __name__ == "__main__":
+def main():
     atexit.register(shutdown_ipython_kernel)
     try:
         start_ipython_kernel()
@@ -247,3 +247,6 @@ if __name__ == "__main__":
     finally:
         print("FastMCP server run loop finished or error occurred.")
         print("Exiting application. Kernel shutdown will be handled by atexit.")
+
+if __name__ == "__main__":
+    main()

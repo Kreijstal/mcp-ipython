@@ -26,4 +26,9 @@ setup(
         'Topic :: System :: Shells',
     ],
     python_requires='>=3.7',
+    entry_points={
+        'console_scripts': [
+            'mcp-ipython-server=server:main',
+        ],
+    },
 )
