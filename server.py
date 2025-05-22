@@ -222,9 +222,6 @@ async def send_command(command: str, ctx: Context) -> str:
             
     return "\n".join(filter(None, outputs))
 
-
-
-
 @mcp.tool()
 async def clear_kernel(ctx: Context) -> str:
     """
